@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSU Asset Catalog</title>
+  <style>
+    :root {
+      --primary: #0078d4;
+      --primary-light: #deecf9;
+      --primary-hover: #106ebe;
+      --text: #242424;
+      --text-secondary: #616161;
+      --border: #e0e0e0;
+      --accent-bg: #f5f5f5;
+      --success: #107c10;
+      --warning: #f7630c;
+      --info: #0078d4;
+      --error: #d13438;
+      --shadow: 0 1px 4px rgba(0,0,0,0.08);
+      --radius: 6px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      margin: 0; padding: 0;
+      line-height: 1.5;
+      min-height: 100vh;
+      background: #f5f5f5;
+    }
+
+    .page-bg { display: none; }
+
+    /* ── Top bar ── */
+    .header-bar {
+      background: #1b1b1b;
+      padding: 0.55rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .header-bar .ms-logo {
+      width: 15px; height: 15px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5px;
+    }
+    .header-bar .ms-logo span { display: block; background: #fff; }
+    .header-bar .header-bar-title {
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 400;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 2rem 2rem;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      margin: 0 -2rem 1.25rem;
+    }
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.1rem;
+    }
+    header p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* ── Config bar ── */
+    .config-bar {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.9rem 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: flex-end;
+      box-shadow: var(--shadow);
+    }
+    .config-bar .field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .config-bar label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); }
+    .config-bar input, .config-bar select {
+      padding: 0.4rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      min-width: 160px;
+      background: #fff;
+    }
+    .config-bar input:focus, .config-bar select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    .config-bar button {
+      padding: 0.42rem 1.25rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .config-bar button:hover { background: var(--primary-hover); }
+
+    /* ── KPI cards ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 900px) { .kpi-row { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); } }
+    .kpi-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .kpi-card .kpi-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px; height: 32px;
+      margin: 0 auto 0.4rem;
+      border-radius: 6px;
+    }
+    .kpi-card .kpi-icon svg { width: 16px; height: 16px; }
+    .kpi-card .kpi-value { font-size: 1.6rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .kpi-card .kpi-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 0.15rem; font-weight: 600; }
+
+    .kpi-card:nth-child(1)::before { background: var(--primary); }
+    .kpi-card:nth-child(1) .kpi-icon { background: #deecf9; color: #0078d4; }
+    .kpi-card:nth-child(2)::before { background: #107c10; }
+    .kpi-card:nth-child(2) .kpi-icon { background: #dff6dd; color: #107c10; }
+    .kpi-card:nth-child(3)::before { background: #616161; }
+    .kpi-card:nth-child(3) .kpi-icon { background: #f0f0f0; color: #616161; }
+    .kpi-card:nth-child(4)::before { background: #005a9e; }
+    .kpi-card:nth-child(4) .kpi-icon { background: #cfe4fa; color: #005a9e; }
+    .kpi-card:nth-child(5)::before { background: #8764b8; }
+    .kpi-card:nth-child(5) .kpi-icon { background: #ede3f6; color: #8764b8; }
+
+    /* ── Charts ── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    @media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
+
+    .chart-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+    }
+    .chart-card h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
+    .chart-card canvas { width: 100% !important; max-height: 280px; }
+
+    /* ── Filters ── */
+    .filters-bar {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.65rem 1rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+    .filters-bar select {
+      padding: 0.35rem 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      background: #fff;
+    }
+    .filters-bar select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    .filters-bar label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); }
+
+    /* ── Table ── */
+    .table-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    .table-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th { text-align: left; padding: 0.55rem 0.75rem; background: var(--accent-bg); color: var(--text); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 0.55rem 0.75rem; border-bottom: 1px solid #f0f0f0; }
+    tbody tr:hover td { background: #f5f8fc; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.12rem 0.45rem;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-open { background: #dff6dd; color: #0e700e; }
+    .badge-closed { background: #f0f0f0; color: #616161; }
+    .badge-category { background: #deecf9; color: #004578; }
+    .badge-type { background: #edebe9; color: #3b3a39; }
+
+    .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+    .status-open { background: var(--success); }
+    .status-closed { background: #a19f9d; }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { color: var(--primary-hover); text-decoration: underline; }
+
+    .loading { text-align: center; padding: 3rem; color: var(--text-secondary); font-size: 0.95rem; }
+    .error-msg { text-align: center; padding: 2rem; color: var(--error); }
+
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--text-secondary); }
+    .empty-state h3 { color: var(--text); margin-bottom: 0.4rem; }
+
+    /* ── Footer ── */
+    .dashboard-footer {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      padding: 1.25rem 0 0.75rem;
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+
+    /* ── Banner ── */
+    .api-banner {
+      border-radius: var(--radius);
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.82rem;
+      display: none;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .api-banner.visible { display: flex; }
+    .api-banner-warn { background: #fff4ce; border: 1px solid #f7630c; color: #6b4c00; }
+    .api-banner-error { background: #fde7e9; border: 1px solid var(--error); color: #a4262c; }
+    .api-banner-info { background: #e5f2ff; border: 1px solid var(--info); color: #004578; }
+    .api-banner .banner-icon { font-size: 1rem; flex-shrink: 0; }
+    .api-banner .banner-body { flex: 1; }
+    .api-banner .banner-body ul { margin: 0.3rem 0 0 1.2rem; padding: 0; }
+    .api-banner .banner-body li { margin-bottom: 0.15rem; }
+    .api-banner .banner-dismiss {
+      background: none; border: none; font-size: 1rem; cursor: pointer;
+      color: inherit; opacity: 0.6; padding: 0 0.2rem;
+    }
+    .api-banner .banner-dismiss:hover { opacity: 1; }
+    .retry-status { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.2rem; }
+  </style>
+</head>
+<body>
+  <div class="page-bg"></div>
+
+  <!-- Top bar -->
+  <div class="header-bar">
+    <div class="ms-logo"><span></span><span></span><span></span><span></span></div>
+    <span class="header-bar-title">Microsoft</span>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>CSU Asset Catalog</h1>
+      <p>Single pane of glass — reusable IP tracking by asset type &amp; contributor</p>
+    </header>
+
+    <!-- Config -->
+    <div class="config-bar" id="configBar">
+      <div class="field">
+        <label for="cfgState">Issue state</label>
+        <select id="cfgState">
+          <option value="all" selected>All</option>
+          <option value="open">Open (in-progress)</option>
+          <option value="closed">Closed (merged)</option>
+        </select>
+      </div>
+      <button onclick="loadDashboard()">Load</button>
+      <span id="dataInfo" style="font-size:0.78rem;color:var(--text-secondary);margin-left:auto"></span>
+    </div>
+
+    <!-- API Status Banner -->
+    <div class="api-banner" id="apiBanner" role="alert" aria-live="polite">
+      <span class="banner-icon" id="bannerIcon">⚠️</span>
+      <div class="banner-body" id="bannerBody"></div>
+      <button class="banner-dismiss" onclick="dismissBanner()" aria-label="Dismiss">&times;</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi-card"><div class="kpi-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 5a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V9zm0 5a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"/></svg></div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-label">Total</div></div>
+      <div class="kpi-card"><div class="kpi-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 11.293a1 1 0 001.414 1.414l2-2A1 1 0 0011 10V7z"/></svg></div><div class="kpi-value" id="kpiOpen">—</div><div class="kpi-label">Open</div></div>
+      <div class="kpi-card"><div class="kpi-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clip-rule="evenodd"/></svg></div><div class="kpi-value" id="kpiClosed">—</div><div class="kpi-label">Closed</div></div>
+      <div class="kpi-card"><div class="kpi-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.97 5.97 0 00-.94-3.22A3.99 3.99 0 0120 17v1h-4zM.94 13.78A5.97 5.97 0 000 17v1h4v-1a3.99 3.99 0 014.94-3.22A5.97 5.97 0 00.94 13.78z"/></svg></div><div class="kpi-value" id="kpiContributors">—</div><div class="kpi-label">Contributors</div></div>
+      <div class="kpi-card"><div class="kpi-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg></div><div class="kpi-value" id="kpiCategories">—</div><div class="kpi-label">Categories</div></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <h3>Issues by Asset Type</h3>
+        <canvas id="chartType"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Issues by Asset Category</h3>
+        <canvas id="chartCategory"></canvas>
+      </div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-card">
+        <h3>Issues by Contributor</h3>
+        <canvas id="chartContributor"></canvas>
+      </div>
+      <div class="chart-card">
+        <h3>Contributions Over Time</h3>
+        <canvas id="chartTimeline"></canvas>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <label>Filter:</label>
+      <select id="filterCategory" onchange="applyFilters()"><option value="">All Categories</option></select>
+      <select id="filterType" onchange="applyFilters()"><option value="">All Types</option></select>
+      <select id="filterContributor" onchange="applyFilters()"><option value="">All Contributors</option></select>
+      <select id="filterState" onchange="applyFilters()">
+        <option value="">All States</option>
+        <option value="open">Open</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+      <h3>Contribution Requests</h3>
+      <div id="tableArea">
+        <div class="empty-state"><h3>Click "Load" to fetch issues</h3><p>Loads contribution data from data.json exported by the GitHub App workflow.</p></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="dashboard-footer">
+      CSU Asset Catalog &middot; Microsoft &middot; Confidential
+    </footer>
+  </div>
+
+  <!-- Chart.js CDN (MIT license) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <!-- API Client with retry/backoff -->
+  <script src="api-client.js" onerror="document.getElementById('tableArea').innerHTML='<div class=\'error-msg\'>Error: api-client.js failed to load. Check network or file path.</div>'"></script>
+
+  <!-- Data transformation utilities (testable module) -->
+  <script src="data-transform.js" onerror="document.getElementById('tableArea').innerHTML='<div class=\'error-msg\'>Error: data-transform.js failed to load. Check network or file path.</div>'"></script>
+
+  <script>
+    /* =========================================================
+       CSU Asset Catalog
+       Reads GitHub Issues (contribution requests) and displays
+       breakdowns by asset type, category, and contributor.
+       ========================================================= */
+
+    // State
+    let allIssues = [];
+    let parsedIssues = [];
+    let charts = {};
+
+    // Chart palette
+    const PALETTE = [
+      '#0078d4','#107c10','#005a9e','#f7630c','#d13438',
+      '#00b7c3','#8764b8','#498205','#ca5010','#038387',
+      '#7a7574','#8e562e','#4c4a48','#e3008c','#2b88d8'
+    ];
+
+    /* ── Toggle source fields ── */
+    // Removed: Live API option no longer available
+
+    /* ── Banner helpers ── */
+    function showBanner(type, icon, htmlContent) {
+      const banner = document.getElementById('apiBanner');
+      const bannerIcon = document.getElementById('bannerIcon');
+      const bannerBody = document.getElementById('bannerBody');
+
+      banner.className = 'api-banner visible api-banner-' + type;
+      bannerIcon.textContent = icon;
+      bannerBody.innerHTML = htmlContent;
+    }
+
+    function dismissBanner() {
+      const banner = document.getElementById('apiBanner');
+      banner.className = 'api-banner';
+    }
+
+    /* ── Load from data.json (generated by GitHub App workflow) ── */
+    async function fetchFromDataJson() {
+      const resp = await fetchWithRetry('data.json');
+      if (!resp.ok) {
+        throw new Error(`data.json not found (${resp.status}). Run the "Contribution Dashboard - Export Data" workflow first.`);
+      }
+      const data = await resp.json();
+      document.getElementById('dataInfo').textContent = `Last refreshed: ${new Date(data.generated_at).toLocaleString()}`;
+      return data.issues || [];
+    }
+
+    /* ── Render KPIs ── */
+    function renderKPIs(issues) {
+      const kpis = computeKPIs(issues);
+      document.getElementById('kpiTotal').textContent = kpis.total;
+      document.getElementById('kpiOpen').textContent = kpis.open;
+      document.getElementById('kpiClosed').textContent = kpis.closed;
+      document.getElementById('kpiContributors').textContent = kpis.contributors;
+      document.getElementById('kpiCategories').textContent = kpis.categories;
+    }
+
+    /* ── Chart helpers ── */
+    function destroyCharts() {
+      for (const key of Object.keys(charts)) {
+        if (charts[key]) charts[key].destroy();
+      }
+      charts = {};
+    }
+
+    const chartsAvailable = typeof Chart !== 'undefined';
+
+    function makeBarChart(canvasId, labels, data, label) {
+      if (!chartsAvailable) return null;
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      const wrappedLabels = labels.map(l => l.includes(' ') ? l.split(' ') : l);
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: wrappedLabels,
+          datasets: [{
+            label,
+            data,
+            backgroundColor: labels.map((_, i) => {
+              const c = PALETTE[i % PALETTE.length];
+              const grad = ctx.createLinearGradient(0, 0, 0, 320);
+              grad.addColorStop(0, c);
+              grad.addColorStop(1, c + '88');
+              return grad;
+            }),
+            borderRadius: 6,
+            borderSkipped: false,
+            maxBarThickness: 52,
+            hoverBackgroundColor: labels.map((_, i) => PALETTE[i % PALETTE.length]),
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          animation: { duration: 800, easing: 'easeOutQuart' },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#242424',
+              titleFont: { family: 'Segoe UI', size: 13, weight: '600' },
+              bodyFont: { family: 'Segoe UI', size: 12 },
+              padding: 10,
+              cornerRadius: 6,
+              displayColors: true,
+              boxPadding: 4,
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, precision: 0, font: { family: 'Segoe UI', size: 11 }, color: '#616161' },
+              grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+              border: { display: false },
+            },
+            x: {
+              ticks: { maxRotation: 0, autoSkip: false, font: { family: 'Segoe UI', size: 11 }, color: '#616161' },
+              grid: { display: false },
+              border: { display: false },
+            }
+          }
+        }
+      });
+    }
+
+    function makeDoughnutChart(canvasId, labels, data) {
+      if (!chartsAvailable) return null;
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: labels.map((_, i) => PALETTE[i % PALETTE.length]),
+            hoverBackgroundColor: labels.map((_, i) => PALETTE[i % PALETTE.length] + 'dd'),
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverBorderColor: '#fff',
+            hoverOffset: 6,
+            spacing: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '58%',
+          animation: { duration: 900, easing: 'easeOutQuart', animateRotate: true },
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                boxWidth: 14,
+                boxHeight: 14,
+                borderRadius: 3,
+                useBorderRadius: true,
+                padding: 14,
+                font: { family: 'Segoe UI', size: 12, weight: '500' },
+                color: '#242424',
+              }
+            },
+            tooltip: {
+              backgroundColor: '#242424',
+              titleFont: { family: 'Segoe UI', size: 13, weight: '600' },
+              bodyFont: { family: 'Segoe UI', size: 12 },
+              padding: 10,
+              cornerRadius: 6,
+              displayColors: true,
+              boxPadding: 4,
+              callbacks: {
+                label: function(ctx) {
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  const pct = total > 0 ? Math.round(ctx.raw / total * 100) : 0;
+                  return ` ${ctx.label}: ${ctx.raw} (${pct}%)`;
+                }
+              }
+            },
+          }
+        }
+      });
+    }
+
+    function makeTimelineChart(canvasId, issues) {
+      if (!chartsAvailable) return null;
+      const trend = aggregateMonthlyTrend(issues);
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 320);
+      grad.addColorStop(0, 'rgba(0,120,212,0.25)');
+      grad.addColorStop(1, 'rgba(0,120,212,0.02)');
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: trend.labels,
+          datasets: [{
+            label: 'New Contributions',
+            data: trend.data,
+            borderColor: '#0078d4',
+            backgroundColor: grad,
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2.5,
+            pointRadius: 5,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: '#0078d4',
+            pointBorderWidth: 2.5,
+            pointHoverRadius: 7,
+            pointHoverBackgroundColor: '#0078d4',
+            pointHoverBorderColor: '#fff',
+            pointHoverBorderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          animation: { duration: 1000, easing: 'easeOutQuart' },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#242424',
+              titleFont: { family: 'Segoe UI', size: 13, weight: '600' },
+              bodyFont: { family: 'Segoe UI', size: 12 },
+              padding: 10,
+              cornerRadius: 6,
+              displayColors: false,
+              intersect: false,
+              mode: 'index',
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, precision: 0, font: { family: 'Segoe UI', size: 11 }, color: '#616161' },
+              grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+              border: { display: false },
+            },
+            x: {
+              ticks: { font: { family: 'Segoe UI', size: 11 }, color: '#616161' },
+              grid: { display: false },
+              border: { display: false },
+            }
+          },
+          interaction: { mode: 'index', intersect: false },
+        }
+      });
+    }
+
+    /* ── Render charts ── */
+    function renderCharts(issues) {
+      destroyCharts();
+
+      // By type
+      const typeCounts = countBy(issues, i => i.types);
+      const typeLabels = Object.keys(typeCounts).sort();
+      charts.type = makeBarChart('chartType', typeLabels, typeLabels.map(k => typeCounts[k]), 'Issues');
+
+      // By category
+      const catCounts = countBy(issues, i => i.categories);
+      const catLabels = Object.keys(catCounts).sort();
+      charts.category = makeDoughnutChart('chartCategory', catLabels, catLabels.map(k => catCounts[k]));
+
+      // By contributor
+      const contribCounts = countBy(issues, i => i.contributor);
+      const contribLabels = Object.keys(contribCounts).sort((a, b) => contribCounts[b] - contribCounts[a]);
+      charts.contributor = makeBarChart('chartContributor', contribLabels, contribLabels.map(k => contribCounts[k]), 'Issues');
+
+      // Timeline
+      charts.timeline = makeTimelineChart('chartTimeline', issues);
+    }
+
+    /* ── Populate filter dropdowns ── */
+    function populateFilters(issues) {
+      const cats = [...new Set(issues.flatMap(i => i.categories))].sort();
+      const types = [...new Set(issues.flatMap(i => i.types))].sort();
+      const contributors = [...new Set(issues.map(i => i.contributor))].sort();
+
+      fillSelect('filterCategory', cats, 'All Categories');
+      fillSelect('filterType', types, 'All Types');
+      fillSelect('filterContributor', contributors, 'All Contributors');
+    }
+
+    function fillSelect(id, options, allLabel) {
+      const el = document.getElementById(id);
+      el.innerHTML = `<option value="">${allLabel}</option>` +
+        options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+    }
+
+    /* ── Filter logic ── */
+    function applyFilters() {
+      const cat = document.getElementById('filterCategory').value;
+      const type = document.getElementById('filterType').value;
+      const contrib = document.getElementById('filterContributor').value;
+      const state = document.getElementById('filterState').value;
+
+      let filtered = parsedIssues;
+      if (cat) filtered = filtered.filter(i => i.categories.includes(cat));
+      if (type) filtered = filtered.filter(i => i.types.includes(type));
+      if (contrib) filtered = filtered.filter(i => i.contributor === contrib);
+      if (state) filtered = filtered.filter(i => i.state === state);
+
+      renderKPIs(filtered);
+      renderCharts(filtered);
+      renderTable(filtered);
+    }
+
+    /* ── Render table ── */
+    function renderTable(issues) {
+      const area = document.getElementById('tableArea');
+      if (issues.length === 0) {
+        area.innerHTML = '<div class="empty-state"><h3>No issues found</h3><p>Try adjusting filters or loading a different repository.</p></div>';
+        return;
+      }
+
+      let html = `<table>
+        <thead><tr>
+          <th>#</th>
+          <th>Asset Name</th>
+          <th>Category</th>
+          <th>Type</th>
+          <th>Contributor</th>
+          <th>State</th>
+          <th>Created</th>
+        </tr></thead><tbody>`;
+
+      for (const issue of issues) {
+        const stateClass = issue.state === 'open' ? 'badge-open' : 'badge-closed';
+        const dotClass = issue.state === 'open' ? 'status-open' : 'status-closed';
+        html += `<tr>
+          <td><a href="${escapeHtml(issue.url)}" target="_blank" rel="noopener">#${issue.number}</a></td>
+          <td>${escapeHtml(issue.assetName)}</td>
+          <td>${issue.categories.map(c => `<span class="badge badge-category">${escapeHtml(c)}</span>`).join(' ')}</td>
+          <td>${issue.types.map(t => `<span class="badge badge-type">${escapeHtml(t)}</span>`).join(' ')}</td>
+          <td><a href="https://github.com/${encodeURIComponent(issue.contributor)}" target="_blank" rel="noopener">@${escapeHtml(issue.contributor)}</a></td>
+          <td><span class="badge ${stateClass}">${issue.state}</span></td>
+          <td>${new Date(issue.created).toLocaleDateString()}</td>
+        </tr>`;
+      }
+
+      html += '</tbody></table>';
+      area.innerHTML = html;
+    }
+
+    /* ── XSS-safe escaping ── */
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.appendChild(document.createTextNode(str || ''));
+      return div.innerHTML;
+    }
+
+    /* ── Main loader ── */
+    async function loadDashboard() {
+      const state = document.getElementById('cfgState').value;
+
+      document.getElementById('tableArea').innerHTML = '<div class="loading">Loading issues…</div>';
+      document.getElementById('dataInfo').textContent = '';
+
+      try {
+        allIssues = await fetchFromDataJson();
+
+        parsedIssues = buildParsedIssues(allIssues);
+
+        // Client-side state filter
+        if (state !== 'all') {
+          parsedIssues = parsedIssues.filter(i => i.state === state);
+        }
+
+        if (parsedIssues.length === 0) {
+          renderKPIs([]);
+          destroyCharts();
+          document.getElementById('tableArea').innerHTML =
+            `<div class="empty-state"><h3>0 issues found</h3><p>No contribution issues found for state "<b>${escapeHtml(state)}</b>".<br>Run the <b>Contribution Dashboard - Export Data</b> workflow to refresh data.</p></div>`;
+          return;
+        }
+
+        populateFilters(parsedIssues);
+        renderKPIs(parsedIssues);
+        renderCharts(parsedIssues);
+        renderTable(parsedIssues);
+        if (!chartsAvailable) {
+          document.querySelectorAll('.chart-card').forEach(el => {
+            el.innerHTML += '<p style="color:#999;font-size:0.8rem;text-align:center">Charts unavailable (Chart.js did not load)</p>';
+          });
+        }
+      } catch (err) {
+        const guidance = buildErrorGuidance(err);
+        showBanner('error', '❌', guidance);
+        document.getElementById('tableArea').innerHTML =
+          `<div class="error-msg">Error: ${escapeHtml(err.message)}</div>`;
+        console.error(err);
+      }
+    }
+
+    // Auto-load data on page open / refresh
+    loadDashboard();
+  </script>
+</body>
+</html>

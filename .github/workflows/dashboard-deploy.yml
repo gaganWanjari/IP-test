@@ -1,0 +1,94 @@
+name: Dashboard - Fetch Issues & Deploy
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: '0 6 * * *'
+
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Fetch issues & deploy to Pages
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch repo issues and generate data.json
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Fetch ALL issues (no label filter for testing)
+            const issues = [];
+            for (const state of ['open', 'closed']) {
+              for await (const response of github.paginate.iterator(
+                github.rest.issues.listForRepo,
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: state,
+                  per_page: 100,
+                }
+              )) {
+                const onlyIssues = response.data.filter(i => !i.pull_request);
+                issues.push(...onlyIssues.map(i => ({
+                  number: i.number,
+                  title: i.title,
+                  state: i.state,
+                  html_url: i.html_url,
+                  created_at: i.created_at,
+                  updated_at: i.updated_at,
+                  closed_at: i.closed_at,
+                  body: i.body,
+                  user: { login: i.user?.login },
+                  labels: i.labels.map(l => ({ name: l.name })),
+                })));
+              }
+            }
+
+            const output = {
+              generated_at: new Date().toISOString(),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              total: issues.length,
+              issues: issues,
+            };
+
+            const outDir = path.join(process.env.GITHUB_WORKSPACE, 'docs', 'dashboard');
+            fs.mkdirSync(outDir, { recursive: true });
+            fs.writeFileSync(path.join(outDir, 'data.json'), JSON.stringify(output, null, 2));
+
+            core.info(`Exported ${issues.length} issues to docs/dashboard/data.json`);
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
