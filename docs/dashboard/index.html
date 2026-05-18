@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com;" />
   <title>CSU Asset Catalog</title>
   <style>
     :root {
@@ -312,15 +312,6 @@
           <option value="all" selected>All</option>
           <option value="open">Open (in-progress)</option>
           <option value="closed">Closed (merged)</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="cfgRefresh">Auto-refresh</label>
-        <select id="cfgRefresh" onchange="toggleAutoRefresh()">
-          <option value="60" selected>Every 60s</option>
-          <option value="30">Every 30s</option>
-          <option value="120">Every 2 min</option>
-          <option value="0">Off</option>
         </select>
       </div>
       <button onclick="loadDashboard()">Refresh Now</button>
@@ -866,20 +857,17 @@
       }
     }
 
-    /* ── Auto-refresh logic ── */
+    /* ── Auto-refresh (silent, every 60s) ── */
     let refreshTimer = null;
 
-    function toggleAutoRefresh() {
-      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
-      const seconds = parseInt(document.getElementById('cfgRefresh').value, 10);
-      if (seconds > 0) {
-        refreshTimer = setInterval(() => loadDashboard(), seconds * 1000);
-      }
+    function startAutoRefresh() {
+      if (refreshTimer) { clearInterval(refreshTimer); }
+      refreshTimer = setInterval(() => loadDashboard(), 60000);
     }
 
     // Auto-load on page open + start auto-refresh
     loadDashboard();
-    toggleAutoRefresh();
+    startAutoRefresh();
   </script>
 </body>
 </html>
