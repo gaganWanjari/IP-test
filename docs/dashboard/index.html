@@ -302,6 +302,14 @@
     <!-- Config -->
     <div class="config-bar" id="configBar">
       <div class="field">
+        <label for="cfgOwner">Owner/Repo</label>
+        <input id="cfgOwner" type="text" placeholder="owner/repo" style="width:180px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
+      </div>
+      <div class="field">
+        <label for="cfgToken">PAT <span style="font-size:0.7rem;color:var(--text-secondary)">(private repos)</span></label>
+        <input id="cfgToken" type="password" placeholder="ghp_... (optional)" style="width:160px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
+      </div>
+      <div class="field">
         <label for="cfgLabel">Label filter</label>
         <input id="cfgLabel" type="text" value="ip-request" style="width:130px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
       </div>
@@ -409,54 +417,74 @@
       '#7a7574','#8e562e','#4c4a48','#e3008c','#2b88d8'
     ];
 
-    /* ── Live GitHub API fetch ── */
+    /* ── Live GitHub API fetch (primary source) ── */
     async function fetchFromGitHubAPI() {
       let owner, repo;
       const label = document.getElementById('cfgLabel').value.trim() || 'external-contrib';
+      const token = document.getElementById('cfgToken').value.trim();
 
-      // Try to detect from data.json metadata
-      try {
-        const metaResp = await fetch('data.json');
-        if (metaResp.ok) {
-          const meta = await metaResp.json();
-          owner = meta.owner;
-          repo = meta.repo;
-        }
-      } catch (_) { /* ignore */ }
+      // 1. Use manually entered owner/repo
+      const cfgOwner = document.getElementById('cfgOwner').value.trim();
+      if (cfgOwner && cfgOwner.includes('/')) {
+        [owner, repo] = cfgOwner.split('/');
+      }
 
-      // Fallback: parse from GitHub Pages URL (e.g. user.github.io/repo-name)
+      // 2. Try data.json metadata
+      if (!owner || !repo) {
+        try {
+          const metaResp = await fetch('data.json');
+          if (metaResp.ok) {
+            const meta = await metaResp.json();
+            owner = meta.owner;
+            repo = meta.repo;
+            // Auto-fill the field for visibility
+            if (owner && repo) document.getElementById('cfgOwner').value = `${owner}/${repo}`;
+          }
+        } catch (_) { /* ignore */ }
+      }
+
+      // 3. Parse from GitHub Pages URL
       if (!owner || !repo) {
         const host = window.location.hostname;
         if (host.endsWith('.github.io')) {
           owner = host.replace('.github.io', '');
           repo = window.location.pathname.split('/')[1] || '';
+          if (owner && repo) document.getElementById('cfgOwner').value = `${owner}/${repo}`;
         }
       }
 
       if (!owner || !repo) {
-        throw new Error('Cannot determine repo owner/name. Falling back to data.json.');
+        throw new Error('Set Owner/Repo field (e.g. "myorg/myrepo").');
       }
 
       const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues?labels=${encodeURIComponent(label)}&state=all&per_page=100`;
-      const resp = await fetchWithRetry(apiUrl, {
-        headers: { 'Accept': 'application/vnd.github+json' }
-      });
+      const headers = { 'Accept': 'application/vnd.github+json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
+      const resp = await fetchWithRetry(apiUrl, { headers });
+
+      if (resp.status === 401) {
+        throw new Error('Authentication failed. Check your PAT token.');
+      }
       if (resp.status === 403 || resp.status === 429) {
         const resetHeader = resp.headers.get('x-ratelimit-reset');
         const resetTime = resetHeader ? new Date(resetHeader * 1000).toLocaleTimeString() : 'soon';
-        throw new Error(`GitHub API rate limited. Resets at ${resetTime}. Falling back to data.json.`);
+        throw new Error(`GitHub API rate limited. Resets at ${resetTime}.`);
       }
-
+      if (resp.status === 404) {
+        throw new Error(`Repo not found or private. ${token ? 'Check PAT permissions.' : 'Add a PAT token for private repos.'}`);
+      }
       if (!resp.ok) {
-        throw new Error(`GitHub API error (${resp.status}). Falling back to data.json.`);
+        throw new Error(`GitHub API error (${resp.status}).`);
       }
 
       const issues = await resp.json();
       // Filter out pull requests (API may include them)
       const onlyIssues = issues.filter(i => !i.pull_request);
 
-      document.getElementById('dataInfo').textContent = `Live data · ${owner}/${repo} · ${onlyIssues.length} issues · fetched ${new Date().toLocaleTimeString()}`;
+      document.getElementById('dataInfo').textContent = `Live · ${owner}/${repo} · ${onlyIssues.length} issues · ${new Date().toLocaleTimeString()}`;
       return onlyIssues;
     }
 
@@ -795,18 +823,26 @@
       document.getElementById('dataInfo').textContent = '';
 
       try {
-        // Hybrid: try live API first for real-time data
-        let usedLiveAPI = false;
+        // Primary: GitHub API for real-time data
+        allIssues = await fetchFromGitHubAPI();
+        showBanner('info', '⚡', 'Showing <b>live data</b> from GitHub API.');
+      } catch (apiErr) {
+        // Fallback: try static data.json only if API fails
         try {
-          allIssues = await fetchFromGitHubAPI();
-          usedLiveAPI = true;
-          showBanner('info', '⚡', 'Showing <b>live data</b> from GitHub API.');
-        } catch (apiErr) {
-          // Fallback to static data.json
-          console.warn('Live API unavailable, falling back to data.json:', apiErr.message);
           allIssues = await fetchFromDataJson();
-          showBanner('warn', '⚠️', `Using <b>cached data</b> (data.json). Live API: ${apiErr.message}`);
+          showBanner('warn', '⚠️', `Using <b>cached data</b> (data.json). API error: ${escapeHtml(apiErr.message)}`);
+        } catch (fallbackErr) {
+          // Both failed
+          const guidance = buildErrorGuidance(apiErr);
+          showBanner('error', '❌', guidance);
+          document.getElementById('tableArea').innerHTML =
+            `<div class="error-msg">Error: ${escapeHtml(apiErr.message)}</div>`;
+          console.error('API error:', apiErr, 'Fallback error:', fallbackErr);
+          return;
         }
+      }
+
+      try {
 
         parsedIssues = buildParsedIssues(allIssues);
 
