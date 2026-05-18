@@ -121,7 +121,7 @@ function buildErrorGuidance(error) {
       `</ul>`;
   }
 
-  return `<strong>Failed to load data:</strong> ${error.message}<br>` +
+  return `<strong>Failed to load data:</strong> ${typeof escapeHtml === 'function' ? escapeHtml(error.message) : error.message}<br>` +
     `<strong>Options:</strong><ul>` +
     `<li>Check your network connection and try again.</li>` +
     `<li>Run the <b>"Contribution Dashboard - Export Data"</b> workflow to refresh data.</li>` +

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';" />
   <title>CSU Asset Catalog</title>
   <style>
     :root {
@@ -302,14 +303,6 @@
     <!-- Config -->
     <div class="config-bar" id="configBar">
       <div class="field">
-        <label for="cfgOwner">Owner/Repo</label>
-        <input id="cfgOwner" type="text" placeholder="owner/repo" style="width:180px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
-      </div>
-      <div class="field">
-        <label for="cfgToken">PAT <span style="font-size:0.7rem;color:var(--text-secondary)">(private repos)</span></label>
-        <input id="cfgToken" type="password" placeholder="ghp_... (optional)" style="width:160px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
-      </div>
-      <div class="field">
         <label for="cfgLabel">Label filter</label>
         <input id="cfgLabel" type="text" value="ip-request" style="width:130px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
       </div>
@@ -321,7 +314,16 @@
           <option value="closed">Closed (merged)</option>
         </select>
       </div>
-      <button onclick="loadDashboard()">Load</button>
+      <div class="field">
+        <label for="cfgRefresh">Auto-refresh</label>
+        <select id="cfgRefresh" onchange="toggleAutoRefresh()">
+          <option value="60" selected>Every 60s</option>
+          <option value="30">Every 30s</option>
+          <option value="120">Every 2 min</option>
+          <option value="0">Off</option>
+        </select>
+      </div>
+      <button onclick="loadDashboard()">Refresh Now</button>
       <span id="dataInfo" style="font-size:0.78rem;color:var(--text-secondary);margin-left:auto"></span>
     </div>
 
@@ -421,67 +423,46 @@
     async function fetchFromGitHubAPI() {
       let owner, repo;
       const label = document.getElementById('cfgLabel').value.trim() || 'external-contrib';
-      const token = document.getElementById('cfgToken').value.trim();
 
-      // 1. Use manually entered owner/repo
-      const cfgOwner = document.getElementById('cfgOwner').value.trim();
-      if (cfgOwner && cfgOwner.includes('/')) {
-        [owner, repo] = cfgOwner.split('/');
-      }
+      // Detect from data.json metadata
+      try {
+        const metaResp = await fetch('data.json');
+        if (metaResp.ok) {
+          const meta = await metaResp.json();
+          owner = meta.owner;
+          repo = meta.repo;
+        }
+      } catch (_) { /* ignore */ }
 
-      // 2. Try data.json metadata
-      if (!owner || !repo) {
-        try {
-          const metaResp = await fetch('data.json');
-          if (metaResp.ok) {
-            const meta = await metaResp.json();
-            owner = meta.owner;
-            repo = meta.repo;
-            // Auto-fill the field for visibility
-            if (owner && repo) document.getElementById('cfgOwner').value = `${owner}/${repo}`;
-          }
-        } catch (_) { /* ignore */ }
-      }
-
-      // 3. Parse from GitHub Pages URL
+      // Fallback: parse from GitHub Pages URL (e.g. user.github.io/repo-name)
       if (!owner || !repo) {
         const host = window.location.hostname;
         if (host.endsWith('.github.io')) {
           owner = host.replace('.github.io', '');
           repo = window.location.pathname.split('/')[1] || '';
-          if (owner && repo) document.getElementById('cfgOwner').value = `${owner}/${repo}`;
         }
       }
 
       if (!owner || !repo) {
-        throw new Error('Set Owner/Repo field (e.g. "myorg/myrepo").');
+        throw new Error('Cannot determine repo. Falling back to cached data.');
       }
 
       const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues?labels=${encodeURIComponent(label)}&state=all&per_page=100`;
-      const headers = { 'Accept': 'application/vnd.github+json' };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
+      const resp = await fetchWithRetry(apiUrl, {
+        headers: { 'Accept': 'application/vnd.github+json' }
+      });
 
-      const resp = await fetchWithRetry(apiUrl, { headers });
-
-      if (resp.status === 401) {
-        throw new Error('Authentication failed. Check your PAT token.');
-      }
       if (resp.status === 403 || resp.status === 429) {
         const resetHeader = resp.headers.get('x-ratelimit-reset');
         const resetTime = resetHeader ? new Date(resetHeader * 1000).toLocaleTimeString() : 'soon';
-        throw new Error(`GitHub API rate limited. Resets at ${resetTime}.`);
+        throw new Error(`Rate limited. Resets at ${resetTime}.`);
       }
-      if (resp.status === 404) {
-        throw new Error(`Repo not found or private. ${token ? 'Check PAT permissions.' : 'Add a PAT token for private repos.'}`);
-      }
+
       if (!resp.ok) {
-        throw new Error(`GitHub API error (${resp.status}).`);
+        throw new Error(`API error (${resp.status}). Using cached data.`);
       }
 
       const issues = await resp.json();
-      // Filter out pull requests (API may include them)
       const onlyIssues = issues.filter(i => !i.pull_request);
 
       document.getElementById('dataInfo').textContent = `Live · ${owner}/${repo} · ${onlyIssues.length} issues · ${new Date().toLocaleTimeString()}`;
@@ -794,7 +775,7 @@
         const stateClass = issue.state === 'open' ? 'badge-open' : 'badge-closed';
         const dotClass = issue.state === 'open' ? 'status-open' : 'status-closed';
         html += `<tr>
-          <td><a href="${escapeHtml(issue.url)}" target="_blank" rel="noopener">#${issue.number}</a></td>
+          <td><a href="${safeUrl(issue.url)}" target="_blank" rel="noopener">#${issue.number}</a></td>
           <td>${escapeHtml(issue.assetName)}</td>
           <td>${issue.categories.map(c => `<span class="badge badge-category">${escapeHtml(c)}</span>`).join(' ')}</td>
           <td>${issue.types.map(t => `<span class="badge badge-type">${escapeHtml(t)}</span>`).join(' ')}</td>
@@ -813,6 +794,14 @@
       const div = document.createElement('div');
       div.appendChild(document.createTextNode(str || ''));
       return div.innerHTML;
+    }
+
+    /* ── URL sanitization (blocks javascript: scheme) ── */
+    function safeUrl(url) {
+      try {
+        const u = new URL(url, window.location.origin);
+        return (u.protocol === 'https:' || u.protocol === 'http:') ? url : '#';
+      } catch { return '#'; }
     }
 
     /* ── Main loader ── */
@@ -877,8 +866,20 @@
       }
     }
 
-    // Auto-load data on page open / refresh
+    /* ── Auto-refresh logic ── */
+    let refreshTimer = null;
+
+    function toggleAutoRefresh() {
+      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+      const seconds = parseInt(document.getElementById('cfgRefresh').value, 10);
+      if (seconds > 0) {
+        refreshTimer = setInterval(() => loadDashboard(), seconds * 1000);
+      }
+    }
+
+    // Auto-load on page open + start auto-refresh
     loadDashboard();
+    toggleAutoRefresh();
   </script>
 </body>
 </html>
