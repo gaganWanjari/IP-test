@@ -302,6 +302,14 @@
     <!-- Config -->
     <div class="config-bar" id="configBar">
       <div class="field">
+        <label for="cfgOwner">Owner/Repo</label>
+        <input id="cfgOwner" type="text" placeholder="owner/repo (auto-detect)" style="width:180px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
+      </div>
+      <div class="field">
+        <label for="cfgLabel">Label filter</label>
+        <input id="cfgLabel" type="text" value="ip-request" style="width:130px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
+      </div>
+      <div class="field">
         <label for="cfgState">Issue state</label>
         <select id="cfgState">
           <option value="all" selected>All</option>
@@ -368,7 +376,7 @@
     <div class="table-card">
       <h3>Contribution Requests</h3>
       <div id="tableArea">
-        <div class="empty-state"><h3>Click "Load" to fetch issues</h3><p>Loads contribution data from data.json exported by the GitHub App workflow.</p></div>
+        <div class="empty-state"><h3>Click "Load" to fetch issues</h3><p>Fetches live data from GitHub API. Falls back to cached data.json if rate-limited.</p></div>
       </div>
     </div>
 
@@ -379,7 +387,7 @@
   </div>
 
   <!-- Chart.js CDN (MIT license) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
   <!-- API Client with retry/backoff -->
   <script src="api-client.js" onerror="document.getElementById('tableArea').innerHTML='<div class=\'error-msg\'>Error: api-client.js failed to load. Check network or file path.</div>'"></script>
 
@@ -405,8 +413,64 @@
       '#7a7574','#8e562e','#4c4a48','#e3008c','#2b88d8'
     ];
 
-    /* ── Toggle source fields ── */
-    // Removed: Live API option no longer available
+    /* ── Live GitHub API fetch ── */
+    async function fetchFromGitHubAPI() {
+      let owner, repo;
+      const label = document.getElementById('cfgLabel').value.trim() || 'external-contrib';
+
+      // Check if user manually specified owner/repo
+      const cfgOwner = document.getElementById('cfgOwner').value.trim();
+      if (cfgOwner && cfgOwner.includes('/')) {
+        [owner, repo] = cfgOwner.split('/');
+      }
+
+      // Try to detect from data.json metadata
+      if (!owner || !repo) {
+        try {
+          const metaResp = await fetch('data.json');
+          if (metaResp.ok) {
+            const meta = await metaResp.json();
+            owner = meta.owner;
+            repo = meta.repo;
+          }
+        } catch (_) { /* ignore */ }
+      }
+
+      // Fallback: parse from GitHub Pages URL (e.g. user.github.io/repo-name)
+      if (!owner || !repo) {
+        const host = window.location.hostname;
+        if (host.endsWith('.github.io')) {
+          owner = host.replace('.github.io', '');
+          repo = window.location.pathname.split('/')[1] || '';
+        }
+      }
+
+      if (!owner || !repo) {
+        throw new Error('Cannot determine repo owner/name. Set "Owner/Repo" field or falling back to data.json.');
+      }
+
+      const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues?labels=${encodeURIComponent(label)}&state=all&per_page=100`;
+      const resp = await fetchWithRetry(apiUrl, {
+        headers: { 'Accept': 'application/vnd.github+json' }
+      });
+
+      if (resp.status === 403 || resp.status === 429) {
+        const resetHeader = resp.headers.get('x-ratelimit-reset');
+        const resetTime = resetHeader ? new Date(resetHeader * 1000).toLocaleTimeString() : 'soon';
+        throw new Error(`GitHub API rate limited. Resets at ${resetTime}. Falling back to data.json.`);
+      }
+
+      if (!resp.ok) {
+        throw new Error(`GitHub API error (${resp.status}). Falling back to data.json.`);
+      }
+
+      const issues = await resp.json();
+      // Filter out pull requests (API may include them)
+      const onlyIssues = issues.filter(i => !i.pull_request);
+
+      document.getElementById('dataInfo').textContent = `Live data · ${owner}/${repo} · ${onlyIssues.length} issues · fetched ${new Date().toLocaleTimeString()}`;
+      return onlyIssues;
+    }
 
     /* ── Banner helpers ── */
     function showBanner(type, icon, htmlContent) {
@@ -719,7 +783,7 @@
           <td>${issue.categories.map(c => `<span class="badge badge-category">${escapeHtml(c)}</span>`).join(' ')}</td>
           <td>${issue.types.map(t => `<span class="badge badge-type">${escapeHtml(t)}</span>`).join(' ')}</td>
           <td><a href="https://github.com/${encodeURIComponent(issue.contributor)}" target="_blank" rel="noopener">@${escapeHtml(issue.contributor)}</a></td>
-          <td><span class="badge ${stateClass}">${issue.state}</span></td>
+          <td><span class="badge ${stateClass}">${escapeHtml(issue.state)}</span></td>
           <td>${new Date(issue.created).toLocaleDateString()}</td>
         </tr>`;
       }
@@ -743,7 +807,18 @@
       document.getElementById('dataInfo').textContent = '';
 
       try {
-        allIssues = await fetchFromDataJson();
+        // Hybrid: try live API first for real-time data
+        let usedLiveAPI = false;
+        try {
+          allIssues = await fetchFromGitHubAPI();
+          usedLiveAPI = true;
+          showBanner('info', '⚡', 'Showing <b>live data</b> from GitHub API.');
+        } catch (apiErr) {
+          // Fallback to static data.json
+          console.warn('Live API unavailable, falling back to data.json:', apiErr.message);
+          allIssues = await fetchFromDataJson();
+          showBanner('warn', '⚠️', `Using <b>cached data</b> (data.json). Live API: ${apiErr.message}`);
+        }
 
         parsedIssues = buildParsedIssues(allIssues);
 
