@@ -154,16 +154,16 @@
     .kpi-card .kpi-value { font-size: 1.6rem; font-weight: 700; color: var(--text); line-height: 1.2; }
     .kpi-card .kpi-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 0.15rem; font-weight: 600; }
 
-    .kpi-card:nth-child(1)::before { background: var(--primary); }
-    .kpi-card:nth-child(1) .kpi-icon { background: #deecf9; color: #0078d4; }
-    .kpi-card:nth-child(2)::before { background: #107c10; }
-    .kpi-card:nth-child(2) .kpi-icon { background: #dff6dd; color: #107c10; }
-    .kpi-card:nth-child(3)::before { background: #616161; }
-    .kpi-card:nth-child(3) .kpi-icon { background: #f0f0f0; color: #616161; }
-    .kpi-card:nth-child(4)::before { background: #005a9e; }
-    .kpi-card:nth-child(4) .kpi-icon { background: #cfe4fa; color: #005a9e; }
-    .kpi-card:nth-child(5)::before { background: #8764b8; }
-    .kpi-card:nth-child(5) .kpi-icon { background: #ede3f6; color: #8764b8; }
+    .kpi-card:nth-child(1)::before { background: #1e40af; }
+    .kpi-card:nth-child(1) .kpi-icon { background: #dbeafe; color: #1e40af; }
+    .kpi-card:nth-child(2)::before { background: #0e7490; }
+    .kpi-card:nth-child(2) .kpi-icon { background: #cffafe; color: #0e7490; }
+    .kpi-card:nth-child(3)::before { background: #065f46; }
+    .kpi-card:nth-child(3) .kpi-icon { background: #d1fae5; color: #065f46; }
+    .kpi-card:nth-child(4)::before { background: #1e3a5f; }
+    .kpi-card:nth-child(4) .kpi-icon { background: #e0e7ff; color: #1e3a5f; }
+    .kpi-card:nth-child(5)::before { background: #5b21b6; }
+    .kpi-card:nth-child(5) .kpi-icon { background: #ede9fe; color: #5b21b6; }
 
     /* ── Charts ── */
     .charts-row {
@@ -260,6 +260,272 @@
     }
 
     .retry-status { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.2rem; }
+
+    /* ── Gradient KPI Row ── */
+    .top-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 900px) { .top-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    .top-kpi-card {
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      text-align: center;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .top-kpi-card .top-kpi-value { font-size: 2.2rem; font-weight: 800; line-height: 1.1; }
+    .top-kpi-card .top-kpi-label { font-size: 0.8rem; font-weight: 500; opacity: 0.95; margin-top: 0.2rem; }
+    .top-kpi-card:nth-child(1) { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+    .top-kpi-card:nth-child(2) { background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%); }
+    .top-kpi-card:nth-child(3) { background: linear-gradient(135deg, #065f46 0%, #10b981 100%); }
+    .top-kpi-card:nth-child(4) { background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%); }
+
+    /* ── Tab Navigation ── */
+    .tab-nav {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1rem;
+      overflow-x: auto;
+      background: #fff;
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 0 0.5rem;
+    }
+    .tab-btn {
+      padding: 0.7rem 1.1rem;
+      border: none;
+      background: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: color 0.2s;
+    }
+    .tab-btn:hover { color: var(--primary); }
+    .tab-btn.active { color: var(--primary); font-weight: 600; }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0; right: 0;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 2px 2px 0 0;
+    }
+
+    /* ── Tab Content ── */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── All Issues Tab ── */
+    .issues-filter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .filter-pills { display: flex; gap: 0.4rem; }
+    .filter-pill {
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .issue-list { list-style: none; }
+    .issue-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      background: #fff;
+    }
+    .issue-item:hover { box-shadow: var(--shadow); border-color: var(--primary); }
+    .issue-item-left .issue-number { color: var(--primary); font-weight: 700; font-size: 0.82rem; }
+    .issue-item-left .issue-title { font-weight: 500; font-size: 0.85rem; color: var(--text); }
+    .issue-item-left .issue-meta { font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.15rem; }
+    .issue-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .issue-badge-open { background: #dff6dd; color: #0e700e; border: 1px solid #c3e6c3; }
+    .issue-badge-open::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #107c10; }
+    .issue-badge-closed { background: #dff6dd; color: #0e700e; border: 1px solid #c3e6c3; }
+    .issue-badge-closed::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #107c10; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1.75rem;
+      max-width: 560px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-close {
+      position: absolute;
+      top: 0.75rem; right: 0.75rem;
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-content h2 { font-size: 1rem; color: var(--text-secondary); font-weight: 400; margin-bottom: 0.1rem; }
+    .modal-content .modal-title { font-size: 0.92rem; font-weight: 500; color: var(--text); margin-bottom: 0.85rem; }
+    .modal-section { margin-bottom: 0.85rem; }
+    .modal-section h4 { font-size: 0.82rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--text); }
+    .modal-section p { font-size: 0.82rem; color: var(--text-secondary); }
+    .modal-description {
+      background: var(--accent-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem;
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .modal-actions { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+    .modal-btn {
+      padding: 0.4rem 1rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .modal-btn:hover { background: var(--accent-bg); }
+    .modal-btn-primary { background: var(--error); color: #fff; border-color: var(--error); text-decoration: none; }
+    .modal-btn-primary:hover { background: #b91c1c; text-decoration: none; color: #fff; }
+
+    /* ── Assignments Tab ── */
+    .assignee-group {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+      background: #fff;
+    }
+    .assignee-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .assignee-header:hover { background: var(--accent-bg); }
+    .assignee-header .assignee-name { font-weight: 600; font-size: 0.85rem; }
+    .assignee-header .assignee-count { font-size: 0.78rem; color: var(--text-secondary); margin-left: 0.5rem; }
+    .assignee-header .toggle-icon { font-size: 0.75rem; transition: transform 0.2s; }
+    .assignee-group.expanded .toggle-icon { transform: rotate(90deg); }
+    .assignee-issues { display: none; padding: 0 1rem 0.75rem; }
+    .assignee-group.expanded .assignee-issues { display: block; }
+    .assignee-issue-item { padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0; }
+    .assignee-issue-item:last-child { border-bottom: none; }
+    .assignee-issue-item .issue-number { color: var(--primary); font-weight: 700; font-size: 0.8rem; }
+    .assignee-issue-item .issue-title { font-size: 0.82rem; color: var(--text); }
+    .assignee-issue-item .issue-status { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; margin-top: 0.1rem; }
+    .status-dot-sm { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+    .status-dot-open { background: #3b82f6; }
+    .status-dot-closed { background: #22c55e; }
+
+    /* ── Labels Tab ── */
+    .labels-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 768px) { .labels-grid { grid-template-columns: 1fr; } }
+    .labels-chart-container canvas { width: 100% !important; max-height: 300px; }
+    .top-labels-list { list-style: none; }
+    .top-label-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .top-label-item:last-child { border-bottom: none; }
+    .top-label-item .label-name { display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 500; }
+    .label-color-dot { display: inline-block; width: 11px; height: 11px; border-radius: 3px; }
+    .top-label-item .label-count {
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: var(--accent-bg);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Burndown Tab ── */
+    .burndown-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 768px) { .burndown-grid { grid-template-columns: 1fr; } }
+    .burndown-chart-container canvas { width: 100% !important; max-height: 300px; }
+    .burndown-summary-cards { display: flex; flex-direction: column; gap: 0.75rem; }
+    .burndown-summary-card { padding: 1rem; border-radius: var(--radius); text-align: left; }
+    .burndown-summary-card .bs-label { font-size: 0.75rem; font-weight: 500; margin-bottom: 0.15rem; }
+    .burndown-summary-card .bs-value { font-size: 1.8rem; font-weight: 800; }
+    .burndown-summary-card:nth-child(1) { background: #fef9c3; color: #854d0e; }
+    .burndown-summary-card:nth-child(2) { background: #dcfce7; color: #166534; }
+    .burndown-summary-card:nth-child(3) { background: #dbeafe; color: #1e40af; }
+
+    .section-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 0.75rem;
+    }
+    .section-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
   </style>
 </head>
 <body>
@@ -281,7 +547,7 @@
     <div class="config-bar" id="configBar">
       <div class="field">
         <label for="cfgLabel">Label filter</label>
-        <input id="cfgLabel" type="text" value="ip-request" style="width:130px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
+        <input id="cfgLabel" type="text" value="external-contrib" style="width:130px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
       </div>
       <div class="field">
         <label for="cfgState">Issue state</label>
@@ -294,6 +560,38 @@
       <button onclick="loadDashboard()">Refresh Now</button>
       <span id="dataInfo" style="font-size:0.78rem;color:var(--text-secondary);margin-left:auto"></span>
     </div>
+
+    <!-- Gradient KPI Row -->
+    <div class="top-kpi-row">
+      <div class="top-kpi-card">
+        <div class="top-kpi-value" id="topKpiOpen">—</div>
+        <div class="top-kpi-label">Open Issues</div>
+      </div>
+      <div class="top-kpi-card">
+        <div class="top-kpi-value" id="topKpiInProgress">0</div>
+        <div class="top-kpi-label">In Progress</div>
+      </div>
+      <div class="top-kpi-card">
+        <div class="top-kpi-value" id="topKpiClosed">—</div>
+        <div class="top-kpi-label">Closed Issues</div>
+      </div>
+      <div class="top-kpi-card">
+        <div class="top-kpi-value" id="topKpiCompletion">—</div>
+        <div class="top-kpi-label">Completion Rate</div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="overview">📋 Overview</button>
+      <button class="tab-btn" data-tab="all-issues">📦 All Issues</button>
+      <button class="tab-btn" data-tab="assignments">👥 Assignments</button>
+      <button class="tab-btn" data-tab="labels">🏷️ Labels</button>
+      <button class="tab-btn" data-tab="burndown">📈 Burndown</button>
+    </div>
+
+    <!-- Tab: Overview -->
+    <div class="tab-content active" id="tab-overview">
 
     <!-- KPIs -->
     <div class="kpi-row" id="kpiRow">
@@ -347,10 +645,109 @@
       </div>
     </div>
 
+    </div><!-- /tab-overview -->
+
+    <!-- Tab: All Issues -->
+    <div class="tab-content" id="tab-all-issues">
+      <div class="section-card">
+        <div class="issues-filter-row">
+          <h3 style="margin-bottom:0">Issues (<span id="issueCount">0</span>)</h3>
+          <div class="filter-pills">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="open">Open</button>
+            <button class="filter-pill" data-filter="closed">Closed</button>
+          </div>
+        </div>
+        <ul class="issue-list" id="issueList">
+          <li class="empty-state">Loading issues...</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tab: Assignments -->
+    <div class="tab-content" id="tab-assignments">
+      <div class="section-card">
+        <h3>Issues by Assignee</h3>
+        <div id="assignmentsArea">
+          <div class="empty-state">Loading assignments...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Labels -->
+    <div class="tab-content" id="tab-labels">
+      <div class="section-card">
+        <div class="labels-grid">
+          <div>
+            <h3>Labels Distribution</h3>
+            <div class="labels-chart-container"><canvas id="labelsChart"></canvas></div>
+          </div>
+          <div>
+            <h3>Top Labels</h3>
+            <ul class="top-labels-list" id="topLabelsList"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Burndown -->
+    <div class="tab-content" id="tab-burndown">
+      <div class="section-card">
+        <div class="burndown-grid">
+          <div>
+            <h3>Burndown Chart</h3>
+            <div class="burndown-chart-container"><canvas id="burndownChart"></canvas></div>
+          </div>
+          <div>
+            <h3>Burndown Summary</h3>
+            <div class="burndown-summary-cards">
+              <div class="burndown-summary-card">
+                <div class="bs-label">Open Issues</div>
+                <div class="bs-value" id="bsOpen">—</div>
+              </div>
+              <div class="burndown-summary-card">
+                <div class="bs-label">Closed Issues</div>
+                <div class="bs-value" id="bsClosed">—</div>
+              </div>
+              <div class="burndown-summary-card">
+                <div class="bs-label">Completion</div>
+                <div class="bs-value" id="bsCompletion">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer class="dashboard-footer">
       CSU Asset Catalog &middot; Microsoft &middot; Confidential
     </footer>
+  </div>
+
+  <!-- Issue Detail Modal -->
+  <div class="modal-overlay" id="issueModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <h2 id="modalIssueNumber"></h2>
+      <div class="modal-title" id="modalIssueTitle"></div>
+      <div class="modal-section">
+        <h4>Status</h4>
+        <div id="modalStatus"></div>
+      </div>
+      <div class="modal-section">
+        <h4>Details</h4>
+        <p id="modalDetails"></p>
+      </div>
+      <div class="modal-section">
+        <h4>Description</h4>
+        <div class="modal-description" id="modalDescription"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn" onclick="closeModal()">Close</button>
+        <a class="modal-btn modal-btn-primary" id="modalGithubLink" href="#" target="_blank" rel="noopener">Open in GitHub</a>
+      </div>
+    </div>
   </div>
 
   <!-- Chart.js CDN (MIT license) -->
@@ -816,6 +1213,238 @@
     // Auto-load on page open + start auto-refresh
     loadDashboard();
     startAutoRefresh();
+
+    /* ── Tab switching ── */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    /* ── Issue filter pills ── */
+    let currentIssueFilter = 'all';
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentIssueFilter = pill.dataset.filter;
+        renderIssueList();
+      });
+    });
+
+    /* ── Modal ── */
+    function openIssueModal(issue) {
+      document.getElementById('modalIssueNumber').textContent = '#' + issue.number;
+      document.getElementById('modalIssueTitle').textContent = issue.assetName || issue.title;
+      const badgeClass = issue.state === 'open' ? 'issue-badge-open' : 'issue-badge-closed';
+      const stateLabel = issue.state === 'open' ? 'Open' : 'Closed';
+      document.getElementById('modalStatus').innerHTML = `<span class="issue-badge ${badgeClass}">${escapeHtml(stateLabel)}</span>`;
+      const created = issue.created ? new Date(issue.created) : null;
+      const updated = issue.updated ? new Date(issue.updated) : null;
+      const now = new Date();
+      const daysOld = created ? Math.floor((now - created) / (1000*60*60*24)) : 0;
+      let detailsHtml = '';
+      if (created) detailsHtml += `<strong>Created:</strong> ${created.toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'})} (${daysOld} days old)<br>`;
+      if (updated) detailsHtml += `<strong>Updated:</strong> ${updated.toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'})}`;
+      document.getElementById('modalDetails').innerHTML = detailsHtml;
+      document.getElementById('modalDescription').textContent = issue.description || 'No description available.';
+      document.getElementById('modalGithubLink').href = safeUrl(issue.url);
+      document.getElementById('issueModal').classList.add('show');
+    }
+    function closeModal() { document.getElementById('issueModal').classList.remove('show'); }
+    document.getElementById('issueModal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
+
+    /* ── Render gradient KPIs ── */
+    function renderTopKPIs(issues) {
+      const open = issues.filter(i => i.state === 'open').length;
+      const closed = issues.filter(i => i.state === 'closed').length;
+      const total = issues.length;
+      const completion = total > 0 ? Math.round((closed / total) * 100) : 0;
+      document.getElementById('topKpiOpen').textContent = open;
+      document.getElementById('topKpiInProgress').textContent = '0';
+      document.getElementById('topKpiClosed').textContent = closed;
+      document.getElementById('topKpiCompletion').textContent = completion + '%';
+      document.getElementById('bsOpen').textContent = open;
+      document.getElementById('bsClosed').textContent = closed;
+      document.getElementById('bsCompletion').textContent = completion + '%';
+    }
+
+    /* ── Render Issue List (All Issues tab) ── */
+    function renderIssueList() {
+      const list = document.getElementById('issueList');
+      let filtered = parsedIssues;
+      if (currentIssueFilter === 'open') filtered = filtered.filter(i => i.state === 'open');
+      if (currentIssueFilter === 'closed') filtered = filtered.filter(i => i.state === 'closed');
+      document.getElementById('issueCount').textContent = filtered.length;
+      if (filtered.length === 0) {
+        list.innerHTML = '<li class="empty-state"><h3>No issues found</h3></li>';
+        return;
+      }
+      list.innerHTML = filtered.map((issue, idx) => {
+        const created = issue.created ? new Date(issue.created) : null;
+        const now = new Date();
+        const daysOld = created ? Math.floor((now - created) / (1000*60*60*24)) : 0;
+        const dateStr = created ? created.toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'}) : '';
+        const badgeClass = issue.state === 'open' ? 'issue-badge-open' : 'issue-badge-closed';
+        const stateLabel = issue.state === 'open' ? 'Open' : 'Closed';
+        return `<li class="issue-item" onclick="openIssueByFilter(${idx})">
+          <div class="issue-item-left">
+            <span class="issue-number">#${issue.number}</span>
+            <span class="issue-title">${escapeHtml(issue.assetName || issue.title)}</span>
+            <div class="issue-meta">${dateStr} &bull; ${daysOld} days old</div>
+          </div>
+          <span class="issue-badge ${badgeClass}">${stateLabel}</span>
+        </li>`;
+      }).join('');
+    }
+    function openIssueByFilter(idx) {
+      let filtered = parsedIssues;
+      if (currentIssueFilter === 'open') filtered = filtered.filter(i => i.state === 'open');
+      if (currentIssueFilter === 'closed') filtered = filtered.filter(i => i.state === 'closed');
+      if (filtered[idx]) openIssueModal(filtered[idx]);
+    }
+
+    /* ── Render Assignments ── */
+    function renderAssignments() {
+      const area = document.getElementById('assignmentsArea');
+      const groups = {};
+      for (const issue of parsedIssues) {
+        const assignee = issue.contributor || 'Unassigned';
+        if (!groups[assignee]) groups[assignee] = [];
+        groups[assignee].push(issue);
+      }
+      const sortedKeys = Object.keys(groups).sort((a, b) => {
+        if (a === 'Unassigned') return -1;
+        if (b === 'Unassigned') return 1;
+        return groups[b].length - groups[a].length;
+      });
+      if (sortedKeys.length === 0) {
+        area.innerHTML = '<div class="empty-state"><h3>No assignments</h3></div>';
+        return;
+      }
+      area.innerHTML = sortedKeys.map(assignee => {
+        const issues = groups[assignee];
+        return `<div class="assignee-group">
+          <div class="assignee-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div><span class="assignee-name">${escapeHtml(assignee)}</span><span class="assignee-count">${issues.length} issues</span></div>
+            <span class="toggle-icon">&#9654;</span>
+          </div>
+          <div class="assignee-issues">
+            ${issues.map(i => {
+              const dotClass = i.state === 'open' ? 'status-dot-open' : 'status-dot-closed';
+              return `<div class="assignee-issue-item">
+                <span class="issue-number">#${i.number}</span>
+                <span class="issue-title">${escapeHtml(i.assetName || i.title)}</span>
+                <div class="issue-status"><span class="status-dot-sm ${dotClass}"></span>${escapeHtml(i.state)}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    /* ── Render Labels Tab ── */
+    function renderLabelsTab() {
+      const labelCounts = {};
+      for (const issue of parsedIssues) {
+        if (issue.labels && issue.labels.length > 0) {
+          for (const label of issue.labels) { labelCounts[label] = (labelCounts[label] || 0) + 1; }
+        } else {
+          labelCounts['No Label'] = (labelCounts['No Label'] || 0) + 1;
+        }
+      }
+      const sorted = Object.entries(labelCounts).sort((a, b) => b[1] - a[1]);
+      const labels = sorted.map(s => s[0]);
+      const data = sorted.map(s => s[1]);
+      // Top labels list
+      const topList = document.getElementById('topLabelsList');
+      topList.innerHTML = sorted.slice(0, 10).map((item, idx) => {
+        const color = PALETTE[idx % PALETTE.length];
+        return `<li class="top-label-item">
+          <span class="label-name"><span class="label-color-dot" style="background:${color}"></span>${escapeHtml(item[0])}</span>
+          <span class="label-count">${item[1]}</span>
+        </li>`;
+      }).join('');
+      // Chart
+      if (chartsAvailable) {
+        if (charts.labelsTab) charts.labelsTab.destroy();
+        const ctx = document.getElementById('labelsChart').getContext('2d');
+        charts.labelsTab = new Chart(ctx, {
+          type: 'bar',
+          data: { labels: labels.slice(0, 15), datasets: [{ data: data.slice(0, 15), backgroundColor: '#3b82f6', borderRadius: 4, maxBarThickness: 40 }] },
+          options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0, font: { size: 11 }, color: '#616161' }, grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }, border: { display: false } },
+              x: { ticks: { maxRotation: 45, font: { size: 10 }, color: '#616161' }, grid: { display: false }, border: { display: false } }
+            }
+          }
+        });
+      }
+    }
+
+    /* ── Render Burndown Tab ── */
+    function renderBurndownTab() {
+      if (!chartsAvailable) return;
+      if (charts.burndownTab) charts.burndownTab.destroy();
+      const allDates = parsedIssues.filter(i => i.created).map(i => new Date(i.created)).sort((a, b) => a - b);
+      if (allDates.length === 0) return;
+      const start = allDates[0];
+      const end = new Date();
+      const months = [];
+      const d = new Date(start.getFullYear(), start.getMonth(), 1);
+      while (d <= end) { months.push(new Date(d)); d.setMonth(d.getMonth() + 1); }
+      const openData = [], closedData = [], monthLabels = [];
+      for (const month of months) {
+        const nextMonth = new Date(month.getFullYear(), month.getMonth() + 1, 1);
+        openData.push(parsedIssues.filter(i => { const c = new Date(i.created); const cl = i.closed ? new Date(i.closed) : null; return c < nextMonth && (!cl || cl >= nextMonth); }).length);
+        closedData.push(parsedIssues.filter(i => { const cl = i.closed ? new Date(i.closed) : null; return cl && cl < nextMonth; }).length);
+        monthLabels.push(month.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
+      const ctx = document.getElementById('burndownChart').getContext('2d');
+      const gradOpen = ctx.createLinearGradient(0, 0, 0, 300);
+      gradOpen.addColorStop(0, 'rgba(74, 222, 128, 0.4)'); gradOpen.addColorStop(1, 'rgba(74, 222, 128, 0.02)');
+      const gradClosed = ctx.createLinearGradient(0, 0, 0, 300);
+      gradClosed.addColorStop(0, 'rgba(196, 181, 253, 0.4)'); gradClosed.addColorStop(1, 'rgba(196, 181, 253, 0.02)');
+      charts.burndownTab = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: monthLabels,
+          datasets: [
+            { label: 'open', data: openData, borderColor: '#22c55e', backgroundColor: gradOpen, fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 },
+            { label: 'closed', data: closedData, borderColor: '#a78bfa', backgroundColor: gradClosed, fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: true,
+          plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'line', font: { size: 12 } } } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 }, color: '#616161' }, grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }, border: { display: false } },
+            x: { ticks: { font: { size: 10 }, color: '#616161', maxTicksLimit: 8 }, grid: { display: false }, border: { display: false } }
+          },
+          interaction: { mode: 'index', intersect: false }
+        }
+      });
+    }
+
+    /* ── Hook new tab renders into loadDashboard ── */
+    const _originalLoadDashboard = loadDashboard;
+    loadDashboard = async function() {
+      await _originalLoadDashboard();
+      if (parsedIssues.length > 0) {
+        renderTopKPIs(parsedIssues);
+        renderIssueList();
+        renderAssignments();
+        renderLabelsTab();
+        renderBurndownTab();
+      }
+    };
+    // Re-trigger with new wrapper
+    loadDashboard();
   </script>
 </body>
 </html>
