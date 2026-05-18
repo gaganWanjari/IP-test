@@ -302,10 +302,6 @@
     <!-- Config -->
     <div class="config-bar" id="configBar">
       <div class="field">
-        <label for="cfgOwner">Owner/Repo</label>
-        <input id="cfgOwner" type="text" placeholder="owner/repo (auto-detect)" style="width:180px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
-      </div>
-      <div class="field">
         <label for="cfgLabel">Label filter</label>
         <input id="cfgLabel" type="text" value="ip-request" style="width:130px;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:var(--radius);font-size:0.82rem" />
       </div>
@@ -418,23 +414,15 @@
       let owner, repo;
       const label = document.getElementById('cfgLabel').value.trim() || 'external-contrib';
 
-      // Check if user manually specified owner/repo
-      const cfgOwner = document.getElementById('cfgOwner').value.trim();
-      if (cfgOwner && cfgOwner.includes('/')) {
-        [owner, repo] = cfgOwner.split('/');
-      }
-
       // Try to detect from data.json metadata
-      if (!owner || !repo) {
-        try {
-          const metaResp = await fetch('data.json');
-          if (metaResp.ok) {
-            const meta = await metaResp.json();
-            owner = meta.owner;
-            repo = meta.repo;
-          }
-        } catch (_) { /* ignore */ }
-      }
+      try {
+        const metaResp = await fetch('data.json');
+        if (metaResp.ok) {
+          const meta = await metaResp.json();
+          owner = meta.owner;
+          repo = meta.repo;
+        }
+      } catch (_) { /* ignore */ }
 
       // Fallback: parse from GitHub Pages URL (e.g. user.github.io/repo-name)
       if (!owner || !repo) {
@@ -446,7 +434,7 @@
       }
 
       if (!owner || !repo) {
-        throw new Error('Cannot determine repo owner/name. Set "Owner/Repo" field or falling back to data.json.');
+        throw new Error('Cannot determine repo owner/name. Falling back to data.json.');
       }
 
       const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues?labels=${encodeURIComponent(label)}&state=all&per_page=100`;
