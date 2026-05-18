@@ -464,11 +464,14 @@
     .assignee-group.expanded .toggle-icon { transform: rotate(90deg); }
     .assignee-issues { display: none; padding: 0 1rem 0.75rem; }
     .assignee-group.expanded .assignee-issues { display: block; }
-    .assignee-issue-item { padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0; }
+    .assignee-issue-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.5rem; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: inherit; transition: background 0.15s; border-radius: 4px; }
+    .assignee-issue-item:hover { background: #f8fafc; }
     .assignee-issue-item:last-child { border-bottom: none; }
-    .assignee-issue-item .issue-number { color: var(--primary); font-weight: 700; font-size: 0.8rem; }
-    .assignee-issue-item .issue-title { font-size: 0.82rem; color: var(--text); }
-    .assignee-issue-item .issue-status { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; margin-top: 0.1rem; }
+    .assignee-issue-item .issue-number { color: var(--primary); font-weight: 700; font-size: 0.8rem; min-width: 2.5rem; }
+    .assignee-issue-item .issue-title { font-size: 0.82rem; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .assignee-issue-item .issue-status { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; min-width: 3.5rem; }
+    .assignee-issue-item .gh-link-btn { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.6rem; font-size: 0.7rem; font-weight: 500; color: #fff; background: #24292f; border-radius: 4px; white-space: nowrap; transition: background 0.15s; }
+    .assignee-issue-item:hover .gh-link-btn { background: #0078d4; }
     .status-dot-sm { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
     .status-dot-open { background: #3b82f6; }
     .status-dot-closed { background: #22c55e; }
@@ -1336,10 +1339,11 @@
             ${issues.map(i => {
               const dotClass = i.state === 'open' ? 'status-dot-open' : 'status-dot-closed';
               const issueUrl = safeUrl(i.url || '');
-              return `<a class="assignee-issue-item" href="${issueUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;display:flex;">
+              return `<a class="assignee-issue-item" href="${issueUrl}" target="_blank" rel="noopener noreferrer">
                 <span class="issue-number">#${i.number}</span>
                 <span class="issue-title">${escapeHtml(i.assetName || i.title)}</span>
                 <div class="issue-status"><span class="status-dot-sm ${dotClass}"></span>${escapeHtml(i.state)}</div>
+                <span class="gh-link-btn"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub</span>
               </a>`;
             }).join('')}
           </div>
